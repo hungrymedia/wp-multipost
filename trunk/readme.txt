@@ -27,6 +27,14 @@ If the "master post" is edited or deleted, all sub-blog copies will also be edit
 
 No. The current version of Multipost MU will post any posts made to the main blog to ALL sub-blogs as long as the plugin is enabled.
 
+= Can I modify or delete a post from all sub-blogs simultaneously? =
+
+Yes. Any posts made to the main blog can be edited or deleted and those changes will be reflected on each sub-blog.
+
+= What is this HMMultipostMU_children custom field I see on my main post? =
+
+The HMMultipostMU_children custom field stores the data for each sub-blog post made from the main blog. This is what maintains the relationship between each main post and sub-blog posts. If you remove or alter this custom field, you may be unable to automatically edit/delete related sub-blog posts any longer.
+
 == Changelog ==
 
 = 1.0 =
