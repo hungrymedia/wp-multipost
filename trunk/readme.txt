@@ -35,6 +35,10 @@ Yes. Any posts made to the main blog can be edited or deleted and those changes 
 
 The HMMultipostMU_children custom field stores the data for each sub-blog post made from the main blog. This is what maintains the relationship between each main post and sub-blog posts. If you remove or alter this custom field, you may be unable to automatically edit/delete related sub-blog posts any longer.
 
+== Screenshots ==
+
+1. Shows the options page for Multipost MU. Simply a way to enable/disable multiposting functionality. This may be useful to temporarily disable the plugin if you wish to make a post to the main blog WITHOUT posting to all sub-blogs. 
+
 == Changelog ==
 
 = 1.0 =
