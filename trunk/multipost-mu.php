@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Multipost MU
-Plugin URI:	http://www.hungry-media.com
+Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
 Version: v1.0
-Author: <a href="http://www.hungry-media.com">War-N Harrison</a>
+Author: War-N Harrison
 Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
 
 */
