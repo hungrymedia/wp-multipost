@@ -18,7 +18,7 @@ If the "master post" is edited or deleted, all sub-blog copies will also be edit
 == Installation ==
 
 1. Unzip and upload `multipost-mu.php` to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu of the top-level blog in WordPress MU
+2. Activate the plugin through the 'Plugins' menu of the main/master blog ONLY in WordPress MU
 3. Go to the Multipost MU options page (under Settings) and 'Enable Multipost MU'
 
 == Frequently Asked Questions ==
@@ -34,6 +34,10 @@ Yes. Any posts made to the main blog can be edited or deleted and those changes 
 = What is this HMMultipostMU_children custom field I see on my main post? =
 
 The HMMultipostMU_children custom field stores the data for each sub-blog post made from the main blog. This is what maintains the relationship between each main post and sub-blog posts. If you remove or alter this custom field, you may be unable to automatically edit/delete related sub-blog posts any longer.
+
+= Why am I am seeing hundreds of copies of each post show up? =
+
+Make sure you ONLY activate the plugin for the main/master blog. If you activate the plugin on every blog, the plugin will become a cross-posting monster. I plan to add code to safe guard against this in future.
 
 == Screenshots ==
 
