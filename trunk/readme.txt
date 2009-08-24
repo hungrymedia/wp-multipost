@@ -3,22 +3,25 @@ Contributors: hungrymedia
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.8.2
-Tested up to: 2.8.2
+Tested up to: 2.8.4
 Stable tag: trunk
 
 Multipost MU is a Wordpress MU plugin that allows you to publish a post to your top-level blog and have it be automatically posted on ALL sub-blogs.
 
 == Description ==
 
-NOTE: This plugin is for Wordpress MU and has been tested on WPMU 2.8.2 only
+NOTE: This plugin is for Wordpress MU.
 
 WPMU Multipost is a Wordpress MU plugin that allows you to publish a post to your top-level blog and have it be automatically posted on ALL sub-blogs.
 If the "master post" is edited or deleted, all sub-blog copies will also be edited or deleted.
 
+NOTE: This plugin will not currently work if you are using subdomains for your sub-blogs. A fix for this is forthcoming.
+
+
 == Installation ==
 
 1. Unzip and upload `multipost-mu.php` to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu of the main/master blog ONLY in WordPress MU
+2. Activate the plugin through the 'Plugins' menu of the main/master blog in WordPress MU
 3. Go to the Multipost MU options page (under Settings) and 'Enable Multipost MU'
 
 == Frequently Asked Questions ==
@@ -37,7 +40,7 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 = Why am I am seeing hundreds of copies of each post show up? =
 
-Make sure you ONLY activate the plugin for the main/master blog. If you activate the plugin on every blog, the plugin will become a cross-posting monster. I plan to add code to safe guard against this in future.
+This plugin will not currently work if you are using subdomains for your sub-blogs. A fix for this is forthcoming.
 
 == Screenshots ==
 
