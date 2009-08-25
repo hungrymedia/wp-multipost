@@ -74,7 +74,7 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			<?php
 		}
 		function multiPost( $postID ){
-			global $switched;
+			global $switched, $blog_id;
 			$pluginOptions = $this->getAdminOptions();
 			// if the plugin is not enabled, bail out
 			if( $pluginOptions['enable_multipost'] != 'Yes' ){
@@ -96,25 +96,28 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			);
 			// get list of blogs
 			$subBlogs = get_blog_list();
+			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
 			foreach( $subBlogs as $subBlog ){
-				$childPostID = 0;	// used to hold new/updated post for each sub-blog
-				// switch each sub-blog
-				if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
-						if( isset( $childPosts[$subBlog['blog_id']] ) ){
-							// there is already an existing post for this blog
-							$dupePost['ID'] = $childPosts[$subBlog['blog_id']];	// set post ID
-							$childPostID = wp_update_post( $dupePost );
-							unset( $dupePost['ID'] );	// remove post ID from duped post object
-						}else{
-							// no existing post for this blog, create a new post
-							$childPostID = wp_insert_post( $dupePost );
-						}
-						if( $childPostID > 0 ){
-							// if the update/new post was successful, add it to the array of child posts
-							$childPosts[$subBlog['blog_id']] = $childPostID;
-						}
-					// jump back to master blog
-					restore_current_blog();
+				if( $blog_id != $subBlog['blog_id'] ){ // skip the current blog
+					$childPostID = 0;	// used to hold new/updated post for each sub-blog
+					// switch each sub-blog
+					if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
+							if( isset( $childPosts[$subBlog['blog_id']] ) ){
+								// there is already an existing post for this blog
+								$dupePost['ID'] = $childPosts[$subBlog['blog_id']];	// set post ID
+								$childPostID = wp_update_post( $dupePost );
+								unset( $dupePost['ID'] );	// remove post ID from duped post object
+							}else{
+								// no existing post for this blog, create a new post
+								$childPostID = wp_insert_post( $dupePost );
+							}
+							if( $childPostID > 0 ){
+								// if the update/new post was successful, add it to the array of child posts
+								$childPosts[$subBlog['blog_id']] = $childPostID;
+							}
+						// jump back to master blog
+						restore_current_blog();
+					}
 				}
 			}
 			// add list of child posts to master post as metadata
