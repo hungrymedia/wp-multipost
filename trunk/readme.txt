@@ -42,7 +42,7 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 == Changelog ==
 
 = 1.1 =
-* Added logic to prevent multiposts from posting to source blog, resulting in hundreds of duplicate posts.
+* BUG FIX: Added logic to prevent multi-posts from posting to source blog, resulting in hundreds of duplicate posts.
 
 = 1.0 =
 * Initial release.
