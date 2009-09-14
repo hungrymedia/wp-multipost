@@ -87,12 +87,19 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			}
 			// get post
 			$thisPost = get_post( $postID );
+			$thisPostTags = wp_get_post_tags( $postID );
+			$thisPostTags_string = '';
+			foreach( $thisPostTags as $thisPostTag ){
+				$thisPostTags_string .= $thisPostTag->name .',';
+			}
+			$thisPostTags_string = trim( $thisPostTags_string, ',' );
 			// create post object with this post's data
 			$dupePost = array(
 				'post_title' => $thisPost->post_title, 
 				'post_content' => $thisPost->post_content, 
 				'post_status' => $thisPost->post_status, 
-				'post_author' => $thisPost->post_author
+				'post_author' => $thisPost->post_author, 
+				'tags_input' => $thisPostTags_string
 			);
 			// get list of blogs
 			$subBlogs = get_blog_list();

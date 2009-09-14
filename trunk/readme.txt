@@ -41,6 +41,9 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 == Changelog ==
 
+= 1.2 =
+* Added tag support so that master post's tags are carried through to sub-blog posts.
+
 = 1.1 =
 * BUG FIX: Added logic to prevent multi-posts from posting to source blog, resulting in hundreds of duplicate posts.
 
