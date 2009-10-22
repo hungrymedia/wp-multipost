@@ -41,11 +41,11 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 == Changelog ==
 
-= 1.3 =
-* BUG FIX: Added logic to ensure ALL sub-blogs are updated (not just the first 10). Thanks to Ben Gribaudo (http://www.bengribaudo.com)
-
 = 1.4 =
 * BUG FIX: Removed debug statements.
+
+= 1.3 =
+* BUG FIX: Added logic to ensure ALL sub-blogs are updated (not just the first 10). Thanks to Ben Gribaudo (http://www.bengribaudo.com)
 
 = 1.2 =
 * Added tag support so that master post's tags are carried through to sub-blog posts.
