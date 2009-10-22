@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.3
+Version: v1.4
 Author: War-N Harrison
 Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
 
@@ -89,7 +89,6 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			$thisPost = get_post( $postID );
 			$thisPostTags = wp_get_post_tags( $postID );
 			$thisPostCategories = wp_get_post_categories( $thisPost );
-print_r( $thisPostCategories );
 			$thisPostTags_string = '';
 			foreach( $thisPostTags as $thisPostTag ){
 				$thisPostTags_string .= $thisPostTag->name .',';
