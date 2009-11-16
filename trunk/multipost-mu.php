@@ -2,8 +2,8 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.4
-Author: War-N Harrison
+Version: v1.5
+Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
 
 */
@@ -88,7 +88,13 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			// get post
 			$thisPost = get_post( $postID );
 			$thisPostTags = wp_get_post_tags( $postID );
-			$thisPostCategories = wp_get_post_categories( $thisPost );
+			// get array of categories (need ->name parameter)
+			$thisPostCategories = wp_get_object_terms( $postID, 'category' );
+			$masterPostCats = array();
+			// pull category id/name into array for easier searching
+			foreach( $thisPostCategories as $thisPostCategory ){
+				$masterPostCats[$thisPostCategory->term_id] = $thisPostCategory->name;
+			}
 			$thisPostTags_string = '';
 			foreach( $thisPostTags as $thisPostTag ){
 				$thisPostTags_string .= $thisPostTag->name .',';
@@ -120,6 +126,24 @@ if( !class_exists( 'HMMultipostMU' ) ){
 								$childPostID = wp_insert_post( $dupePost );
 							}
 							if( $childPostID > 0 ){
+								// get the new post's object
+								$childPost = get_post( $childPostID );
+								// get existing categories for this blog
+								$childBlogCats = get_terms( 'category' );
+								// if matching category found, add post to it
+								$matchingCatID = 0;
+								$childCatsToAdd = array();
+								foreach( $masterPostCats as $masterPostCats_key=>$masterPostCats_value ){
+									$matchingTerm = get_term_by( 'name', $masterPostCats_value, 'category' );
+									if( $matchingTerm === false ){
+										// create new term/category
+										$newCatID = wp_create_category( $masterPostCats_value );
+										$matchingTerm = get_term( $newCatID, 'category' );
+									}
+									array_push( $childCatsToAdd, $matchingTerm->term_id );
+								}
+								// add terms/categories to post
+								wp_set_post_categories( $childPostID, $childCatsToAdd );
 								// if the update/new post was successful, add it to the array of child posts
 								$childPosts[$subBlog['blog_id']] = $childPostID;
 							}

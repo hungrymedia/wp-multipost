@@ -3,7 +3,7 @@ Contributors: hungrymedia
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.8.2
-Tested up to: 2.8.4
+Tested up to: 2.8.5
 Stable tag: trunk
 
 Multipost MU is a Wordpress MU plugin that allows you to publish a post to your top-level blog and have it be automatically posted on ALL sub-blogs.
@@ -40,6 +40,9 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 1. Shows the options page for Multipost MU. Simply a way to enable/disable multiposting functionality. This may be useful to temporarily disable the plugin if you wish to make a post to the main blog WITHOUT posting to all sub-blogs. 
 
 == Changelog ==
+
+= 1.5 =
+* Added category support. If categories from master post do not yet exist in sub-blogs, they will be created.
 
 = 1.4 =
 * BUG FIX: Removed debug statements.
