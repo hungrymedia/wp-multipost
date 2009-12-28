@@ -25,7 +25,7 @@ If the "master post" is edited or deleted, all sub-blog copies will also be edit
 
 = Can I choose on which sub-blogs my post will display? =
 
-No. The current version of Multipost MU will post any posts made to the main blog to ALL sub-blogs as long as the plugin is enabled.
+Yes. Once the plugin is enabled, you will see a Multipost MU area on the right side of the "Add New Post" and "Edit Post" screens. This will allow you to select which blogs receive a copy of the post.
 
 = Can I modify or delete a post from all sub-blogs simultaneously? =
 
@@ -39,7 +39,12 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 1. Shows the options page for Multipost MU. Simply a way to enable/disable multiposting functionality. This may be useful to temporarily disable the plugin if you wish to make a post to the main blog WITHOUT posting to all sub-blogs. 
 
+2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which sub-blogs your master post is added.
+
 == Changelog ==
+
+= 1.6 =
+* Added the ability to choose to which sub-blogs your master post is also posted.
 
 = 1.5 =
 * Added category support. If categories from master post do not yet exist in sub-blogs, they will be created.

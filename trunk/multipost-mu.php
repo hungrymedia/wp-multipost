@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.5
+Version: v1.6
 Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
 
@@ -112,6 +112,10 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			$subBlogs = get_blog_list( 0, 'all' );
 			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
 			foreach( $subBlogs as $subBlog ){
+				// if user selected specific blogs in which to post and this blog isn't among them, skip to next
+				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+					continue;
+				}
 				if( $blog_id != $subBlog['blog_id'] ){ // skip the current blog
 					$childPostID = 0;	// used to hold new/updated post for each sub-blog
 					// switch each sub-blog
@@ -177,7 +181,7 @@ if( !class_exists( 'HMMultipostMU' ) ){
 				}
 			}
 		}
-
+		
 	}	
 	
 } // End HMMultipostMU class
@@ -198,11 +202,84 @@ if( !function_exists( 'HMMultipostMU_op' ) ){
 	}
 }
 
+if( !function_exists( 'HMMultipostMU_postUI' ) ){
+	function HMMultipostMU_postUI(){
+		global $hmMultipostMU;
+		if( !isset( $hmMultipostMU ) ){
+			return;
+		}
+		if( function_exists( 'add_meta_box' ) ){
+			add_meta_box('HMMPMU_meta', 'Multipost MU', 'HMMPMU_showSubBlogBoxes', 'post', 'side', 'low' );
+		}
+	}
+}
+
+function HMMPMU_showSubBlogBoxes( $post){
+	global $user_ID, $blog_id;
+	?>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+  <script type="text/javascript">
+  $(document).ready( function(){
+		$('#HMMPMU_checkall').click( function(e){
+			e.preventDefault();
+			HMMPMU_check( 'check' );
+		});
+		$('#HMMPMU_checknone').click( function(e){
+			e.preventDefault();
+			HMMPMU_check( 'uncheck' );
+		});
+	});
+	function HMMPMU_check( action ){
+		if( action == 'check' ){
+			$('.HMMPMU_selectedSubBlogs_checkbox').attr('checked', 'true');
+		}else{
+			$('.HMMPMU_selectedSubBlogs_checkbox[disabled!=true]').removeAttr('checked');
+		}
+	}
+
+  </script>
+	<p>Post to the following blogs:<br />
+		(<em>Check <a href="#" id="HMMPMU_checkall">all</a> / <a href="#"id="HMMPMU_checknone">none</a></em>)</p>
+	<?php
+	get_currentuserinfo();
+	// get existing child posts, if any
+	if( $post->ID > 0 ){
+		$childPostBlogIDs = array_keys( unserialize( get_post_meta( $post->ID, 'HMMultipostMU_children', true ) ) );
+	}
+	$subBlogs = get_blogs_of_user( $user_ID );
+	foreach( $subBlogs as $subBlog ){
+//		if( $subBlog->userblog_id != $blog_id ){
+			$checkedHTML = '';
+			$disabledHTML = '';
+			if( $post->ID == 0 || in_array( $subBlog->userblog_id, $childPostBlogIDs ) ){
+				$checkedHTML = 'checked="true"';
+			}
+			if( $subBlog->userblog_id == $blog_id ){
+				$checkedHTML = 'checked="true"';
+				$disabledHTML = 'disabled = "true"';
+			}
+			?>
+			<input type="checkbox" 
+				class="HMMPMU_selectedSubBlogs_checkbox" 
+				name="HMMPMU_selectedSubBlogs[]" 
+				<?php echo $checkedHTML; ?>
+				<?php echo $disabledHTML; ?>
+				value="<?php echo $subBlog->userblog_id; ?>" />
+			<?php 
+			$currentBlog = get_blog_details( $subBlog->userblog_id );
+			echo $currentBlog->blogname; ?><br />
+			<?php
+//		}
+	}
+}
+
+
 // Actions & Filters
 if( isset( $hmMultipostMU ) ){
 	// Actions
 	add_action('multipost-mu/multipost-mu.php',  array(&$hmMultipostMU, 'init')); 
 	add_action('admin_menu', 'HMMultipostMU_op'); 
+	add_action('admin_menu', 'HMMultipostMU_postUI');  
 	add_action('publish_post', array(&$hmMultipostMU, 'multiPost'), 1);
 	add_action('delete_post', array(&$hmMultipostMU, 'deleteMultiPost'), 1);
 	// Filters
