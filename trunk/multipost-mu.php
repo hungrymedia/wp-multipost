@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.6
+Version: v1.6.1
 Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
 
@@ -114,6 +114,15 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			foreach( $subBlogs as $subBlog ){
 				// if user selected specific blogs in which to post and this blog isn't among them, skip to next
 				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+					// if a previous post exists on this blog, but isnt now needed, delete it
+					if( in_array( $subBlog['blog_id'], array_keys( $childPosts ) ) ){
+						if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
+							wp_delete_post( $childPosts[$subBlog['blog_id']] );
+							// jump back to master blog
+							restore_current_blog();
+							unset( $childPosts[$subBlog['blog_id']] );
+						}
+					}
 					continue;
 				}
 				if( $blog_id != $subBlog['blog_id'] ){ // skip the current blog

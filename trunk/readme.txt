@@ -43,6 +43,9 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 == Changelog ==
 
+= 1.6.1 =
+* BUG FIX: Corrected bug where master posts were not removed from a sub-blog if a master post was unassigned from the sub-blog by unchecking the sub-blog checkbox during an edit.
+
 = 1.6 =
 * Added the ability to choose to which sub-blogs your master post is also posted.
 
