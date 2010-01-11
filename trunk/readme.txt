@@ -38,7 +38,7 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 1. Shows the settings page for Multipost MU. Simply a way to choose whether or not all blogs are pre-selected to receive cross posts. 
 
-2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which sub-blogs your master post is added.
+2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which additional blogs your master post is published.
 
 == Changelog ==
 
