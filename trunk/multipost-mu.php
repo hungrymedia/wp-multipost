@@ -2,9 +2,9 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.6.1
+Version: v1.7
 Author: Warren Harrison
-Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
+Description: Allows Wordpress MU publishers to cross-post to multiple blogs at once.
 
 */
 
@@ -12,7 +12,7 @@ if( !class_exists( 'HMMultipostMU' ) ){
 
 	class HMMultipostMU{
 	
-		var $isEnabledOptions = array( 'Yes', 'No' );
+		var $defaultToAllOptions = array( 'Yes', 'No' );
 		var $enabled;
 		var $adminOptionsName = "HMMultipostMUOptions";
 	
@@ -22,7 +22,7 @@ if( !class_exists( 'HMMultipostMU' ) ){
 		}
 		
 		function getAdminOptions() {
-			$adminOptions = array( 'enable_multipost' => 'No' );
+			$adminOptions = array( 'default_to_all' => 'No' );
 			$pluginOptions = get_option( $this->adminOptionsName );
 			if( !empty( $pluginOptions ) ){
 				foreach( $pluginOptions as $key => $value ){
@@ -40,8 +40,8 @@ if( !class_exists( 'HMMultipostMU' ) ){
 		function displayAdminPage(){
 			$pluginOptions = $this->getAdminOptions();
 			if( isset( $_POST['update_HMMultipostMU'] ) ){
-				if( isset( $_POST['enable_multipost'] ) ){
-					$pluginOptions['enable_multipost'] = $_POST['enable_multipost'];
+				if( isset( $_POST['default_to_all'] ) ){
+					$pluginOptions['default_to_all'] = $_POST['default_to_all'];
 				}
 				update_option( $this->adminOptionsName, $pluginOptions );
 				?>
@@ -52,16 +52,16 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			<div class="wrap">
 			<form method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>" >
 				<h2>Multipost MU</h2>
-        <p>This plugin &ldquo;broadcasts&rdquo; any posts made to the top-level blog of a Wordpress MU site to every sub-blog. The posts made to each sub-blog will be completely independent posts and are, therefore, fully editable on each sub-blog without affecting the matching posts elsewhere.</p>
-				<label for="enable">Enable Multipost MU? </label>
+        <p>This plugin provides the ability to cross-post to any other blogs in the same Wordpress MU installation to which the posting user has access. The posts made to each sub-blog will be completely independent posts and are, therefore, fully editable on each sub-blog without affecting the matching posts elsewhere.</p>
+				<label for="enable">Post to all blogs by default? </label>
         <?php
-				foreach( $this->isEnabledOptions as $isEnabledOption ){
+				foreach( $this->defaultToAllOptions as $defaultToAllOption ){
 					$selectedHTML = '';
-					if( $pluginOptions['enable_multipost'] == $isEnabledOption ){
+					if( $pluginOptions['default_to_all'] == $defaultToAllOption ){
 						$selectedHTML = 'checked="true"';
 					}
 					?>
-        <input <?php echo $selectedHTML; ?> type="radio" id="enable_multipost" name="enable_multipost" value="<?php echo $isEnabledOption; ?>" /> <?php echo $isEnabledOption; ?>
+        <input <?php echo $selectedHTML; ?> type="radio" id="default_to_all" name="default_to_all" value="<?php echo $defaultToAllOption; ?>" /> <?php echo $defaultToAllOption; ?>
           <?php
 				}
 				?>
@@ -75,9 +75,8 @@ if( !class_exists( 'HMMultipostMU' ) ){
 		}
 		function multiPost( $postID ){
 			global $switched, $blog_id;
-			$pluginOptions = $this->getAdminOptions();
-			// if the plugin is not enabled, bail out
-			if( $pluginOptions['enable_multipost'] != 'Yes' ){
+			// ensure multipost is only triggered from source blog to prevent massive cascade of posts
+			if( $blog_id != $_POST['HMMPMU_source_blog_id'] ){
 				return false;
 			}
 			// get existing child posts, if any
@@ -110,6 +109,11 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			);
 			// get list of blogs
 			$subBlogs = get_blog_list( 0, 'all' );
+/*
+echo "<pre>";
+print_r( $subBlogs );
+echo "</pre>";
+*/
 			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
 			foreach( $subBlogs as $subBlog ){
 				// if user selected specific blogs in which to post and this blog isn't among them, skip to next
@@ -171,11 +175,6 @@ if( !class_exists( 'HMMultipostMU' ) ){
 
 		function deleteMultiPost( $postID ){
 			global $switched;
-			$pluginOptions = $this->getAdminOptions();
-			// if the plugin is not enabled, bail out
-			if( $pluginOptions['enable_multipost'] != 'Yes' ){
-				return false;
-			}
 			// get existing child posts, if any
 			$childPosts = unserialize( get_post_meta( $postID, 'HMMultipostMU_children', true ) );
 			if( !is_array( $childPosts ) ){
@@ -213,18 +212,20 @@ if( !function_exists( 'HMMultipostMU_op' ) ){
 
 if( !function_exists( 'HMMultipostMU_postUI' ) ){
 	function HMMultipostMU_postUI(){
-		global $hmMultipostMU;
+		global $hmMultipostMU, $blog_id;
+//		if( !isset( $hmMultipostMU ) || $blog_id > 1 ){
 		if( !isset( $hmMultipostMU ) ){
 			return;
 		}
 		if( function_exists( 'add_meta_box' ) ){
-			add_meta_box('HMMPMU_meta', 'Multipost MU', 'HMMPMU_showSubBlogBoxes', 'post', 'side', 'low' );
+			add_meta_box('HMMPMU_meta', 'Multipost', 'HMMPMU_showSubBlogBoxes', 'post', 'side', 'low' );
 		}
 	}
 }
 
-function HMMPMU_showSubBlogBoxes( $post){
-	global $user_ID, $blog_id;
+function HMMPMU_showSubBlogBoxes( $post ){
+	global $user_ID, $blog_id, $hmMultipostMU;
+	$pluginOptions = $hmMultipostMU->getAdminOptions();
 	?>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
   <script type="text/javascript">
@@ -247,23 +248,31 @@ function HMMPMU_showSubBlogBoxes( $post){
 	}
 
   </script>
-	<p>Post to the following blogs:<br />
-		(<em>Check <a href="#" id="HMMPMU_checkall">all</a> / <a href="#"id="HMMPMU_checknone">none</a></em>)</p>
+  <input type="hidden" name="HMMPMU_source_blog_id" value="<?php echo $blog_id; ?>" />
+	<p style="float: right; font-size: 0.8em;">Check <a href="#" id="HMMPMU_checkall">all</a> / <a href="#"id="HMMPMU_checknone">none</a></p>
+  <p>Post to:</p>
 	<?php
 	get_currentuserinfo();
 	// get existing child posts, if any
 	if( $post->ID > 0 ){
-		$childPostBlogIDs = array_keys( unserialize( get_post_meta( $post->ID, 'HMMultipostMU_children', true ) ) );
+		$childBlogs = unserialize( get_post_meta( $post->ID, 'HMMultipostMU_children', true ) );
+		if( !empty( $childBlogs ) ){ 
+			$childPostBlogIDs = array_keys( $childBlogs );
+		}
 	}
-	$subBlogs = get_blogs_of_user( $user_ID );
-	foreach( $subBlogs as $subBlog ){
-//		if( $subBlog->userblog_id != $blog_id ){
+	$oSubBlogs = get_blogs_of_user( $user_ID );
+	$subBlogs = array();
+	foreach( $oSubBlogs as $oSubBlog ){
+		$subBlogs[$oSubBlog->userblog_id] = $oSubBlog->blogname;
+	}
+	asort( $subBlogs, SORT_STRING );
+	foreach( $subBlogs as $subBlogID => $subBlogName ){
 			$checkedHTML = '';
 			$disabledHTML = '';
-			if( $post->ID == 0 || in_array( $subBlog->userblog_id, $childPostBlogIDs ) ){
+			if( ( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) || ( is_array( $childPostBlogIDs ) && in_array( $subBlogID, $childPostBlogIDs ) ) ){
 				$checkedHTML = 'checked="true"';
 			}
-			if( $subBlog->userblog_id == $blog_id ){
+			if( (int)$subBlogID == (int)$blog_id ){
 				$checkedHTML = 'checked="true"';
 				$disabledHTML = 'disabled = "true"';
 			}
@@ -273,12 +282,11 @@ function HMMPMU_showSubBlogBoxes( $post){
 				name="HMMPMU_selectedSubBlogs[]" 
 				<?php echo $checkedHTML; ?>
 				<?php echo $disabledHTML; ?>
-				value="<?php echo $subBlog->userblog_id; ?>" />
+				value="<?php echo $subBlogID; ?>" />
 			<?php 
-			$currentBlog = get_blog_details( $subBlog->userblog_id );
-			echo $currentBlog->blogname; ?><br />
+//			$currentBlog = get_blog_details( $subBlog->userblog_id );
+			echo $subBlogName;?><br />
 			<?php
-//		}
 	}
 }
 

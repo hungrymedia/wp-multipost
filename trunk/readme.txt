@@ -3,29 +3,28 @@ Contributors: hungrymedia
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.8.2
-Tested up to: 2.8.5
+Tested up to: 2.9.1
 Stable tag: trunk
 
-Multipost MU is a Wordpress MU plugin that allows you to publish a post to your top-level blog and have it be automatically posted on ALL sub-blogs.
+Multipost MU is a Wordpress MU plugin that allows you publish a post made to a single blog across multiple blogs.
 
 == Description ==
 
 NOTE: This plugin is for Wordpress MU.
 
-WPMU Multipost is a Wordpress MU plugin that allows you to publish a post to your top-level blog and have it be automatically posted on ALL sub-blogs.
-If the "master post" is edited or deleted, all sub-blog copies will also be edited or deleted.
+Multipost MU is a Wordpress MU plugin that allows you publish a post made to a single blog across multiple blogs. An option panel is added to the sidebar of the Add/Edit post page that alows you to select other blogs to which the current post is published. If the "master post" is edited or deleted, all multiposted copies will also be edited or deleted. 
 
 == Installation ==
 
 1. Unzip and upload `multipost-mu.php` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu of the main/master blog in WordPress MU
-3. Go to the Multipost MU options page (under Settings) and 'Enable Multipost MU'
+3. Add a new or edit an existing post and choose to which other blogs this post should be published (lower right of screen)
 
 == Frequently Asked Questions ==
 
 = Can I choose on which sub-blogs my post will display? =
 
-Yes. Once the plugin is enabled, you will see a Multipost MU area on the right side of the "Add New Post" and "Edit Post" screens. This will allow you to select which blogs receive a copy of the post.
+Yes. Once the plugin is enabled, you will see a Multipost area on the right side of the "Add New Post" and "Edit Post" screens. This will allow you to select which blogs receive a copy of the post.
 
 = Can I modify or delete a post from all sub-blogs simultaneously? =
 
@@ -37,11 +36,15 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 == Screenshots ==
 
-1. Shows the options page for Multipost MU. Simply a way to enable/disable multiposting functionality. This may be useful to temporarily disable the plugin if you wish to make a post to the main blog WITHOUT posting to all sub-blogs. 
+1. Shows the settings page for Multipost MU. Simply a way to choose whether or not all blogs are pre-selected to receive cross posts. 
 
 2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which sub-blogs your master post is added.
 
 == Changelog ==
+
+= 1.7 =
+* Properly implemented cross-posting. User may now post FROM any blog TO any other blogs to which they have access.
+* Removed useless "enable" option from plugin settings page and added option to default to pre-check all blogs when posting, or not.
 
 = 1.6.1 =
 * BUG FIX: Corrected bug where master posts were not removed from a sub-blog if a master post was unassigned from the sub-blog by unchecking the sub-blog checkbox during an edit.
