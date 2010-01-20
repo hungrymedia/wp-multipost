@@ -42,6 +42,9 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 == Changelog ==
 
+= 1.7.1 =
+* BUG FIX: Corrected bug where edits to auto-generated sub-blog posts were creating NEW posts in other blogs. Now, edits to automatically-generated sub-blog posts will only affect the edited post. Note that editing the master post will continue to overwrite sub-blog post edits. This behavior is by design.
+
 = 1.7 =
 * Properly implemented cross-posting. User may now post FROM any blog TO any other blogs to which they have access.
 * Removed useless "enable" option from plugin settings page and added option to default to pre-check all blogs when posting, or not.

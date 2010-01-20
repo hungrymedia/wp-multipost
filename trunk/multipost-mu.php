@@ -2,9 +2,9 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.7
+Version: v1.7.1
 Author: Warren Harrison
-Description: Allows Wordpress MU publishers to cross-post to multiple blogs at once.
+Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
 
 */
 
@@ -139,8 +139,10 @@ echo "</pre>";
 								$childPostID = wp_update_post( $dupePost );
 								unset( $dupePost['ID'] );	// remove post ID from duped post object
 							}else{
-								// no existing post for this blog, create a new post
-								$childPostID = wp_insert_post( $dupePost );
+								// no existing post for this blog, and was checked, create a new post
+								if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+									$childPostID = wp_insert_post( $dupePost );
+								}
 							}
 							if( $childPostID > 0 ){
 								// get the new post's object
@@ -170,7 +172,9 @@ echo "</pre>";
 				}
 			}
 			// add list of child posts to master post as metadata
-			update_post_meta( $postID, 'HMMultipostMU_children', serialize( $childPosts ) );
+			if( !empty( $childPosts ) ){
+				update_post_meta( $postID, 'HMMultipostMU_children', serialize( $childPosts ) );
+			}
 		}
 
 		function deleteMultiPost( $postID ){
