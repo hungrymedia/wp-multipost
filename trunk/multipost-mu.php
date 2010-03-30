@@ -2,9 +2,9 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v1.7.1
+Version: v1.8
 Author: Warren Harrison
-Description: Allow a Wordpress MU site administrator to post to all sub-blogs at once.
+Description: Allow a Wordpress MU site administrator to duplicate posts and pages to multiple sub-blogs at once.
 
 */
 
@@ -52,7 +52,7 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			<div class="wrap">
 			<form method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>" >
 				<h2>Multipost MU</h2>
-        <p>This plugin provides the ability to cross-post to any other blogs in the same Wordpress MU installation to which the posting user has access. The posts made to each sub-blog will be completely independent posts and are, therefore, fully editable on each sub-blog without affecting the matching posts elsewhere.</p>
+        <p>This plugin provides the ability to duplicate posts and pages to any other blogs in the same Wordpress MU installation to which the posting user has access. The posts and pages made to each sub-blog will be completely independent posts/pages and are, therefore, fully editable on each sub-blog without affecting the matching posts/pages elsewhere. If you delete or edit the top-level post or page, however, the corresponding post or page on each sb-blog will be modified or deleted.</p>
 				<label for="enable">Post to all blogs by default? </label>
         <?php
 				foreach( $this->defaultToAllOptions as $defaultToAllOption ){
@@ -73,6 +73,10 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			
 			<?php
 		}
+
+		/*********************************************************************************
+		MULTIPOST FOR POSTS
+		*********************************************************************************/
 		function multiPost( $postID ){
 			global $switched, $blog_id;
 			// ensure multipost is only triggered from source blog to prevent massive cascade of posts
@@ -86,6 +90,10 @@ if( !class_exists( 'HMMultipostMU' ) ){
 			}
 			// get post
 			$thisPost = get_post( $postID );
+			$postCustomFields = get_post_custom( $postID );
+			unset( $postCustomFields['HMMultipostMU_children'] ); // we don't want to copy this one to sub-blogs... rippled chaos will ensue!
+			unset( $postCustomFields['_edit_lock'] ); 
+			unset( $postCustomFields['_edit_last'] );
 			$thisPostTags = wp_get_post_tags( $postID );
 			// get array of categories (need ->name parameter)
 			$thisPostCategories = wp_get_object_terms( $postID, 'category' );
@@ -105,15 +113,11 @@ if( !class_exists( 'HMMultipostMU' ) ){
 				'post_content' => $thisPost->post_content, 
 				'post_status' => $thisPost->post_status, 
 				'post_author' => $thisPost->post_author, 
+				'post_excerpt' => $thisPost->post_excerpt, 
 				'tags_input' => $thisPostTags_string
 			);
 			// get list of blogs
 			$subBlogs = get_blog_list( 0, 'all' );
-/*
-echo "<pre>";
-print_r( $subBlogs );
-echo "</pre>";
-*/
 			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
 			foreach( $subBlogs as $subBlog ){
 				// if user selected specific blogs in which to post and this blog isn't among them, skip to next
@@ -163,6 +167,13 @@ echo "</pre>";
 								}
 								// add terms/categories to post
 								wp_set_post_categories( $childPostID, $childCatsToAdd );
+								// update or set custom fields
+								foreach( $postCustomFields as $postCustomFieldKey=>$postCustomFieldValue ){
+									//update existing custom field (this adds first if fields does not yet exist)
+									foreach( $postCustomFieldValue as $postCustomFieldValueItem ){
+										update_post_meta( $childPostID, $postCustomFieldKey, $postCustomFieldValueItem );
+									}
+								}
 								// if the update/new post was successful, add it to the array of child posts
 								$childPosts[$subBlog['blog_id']] = $childPostID;
 							}
@@ -177,6 +188,96 @@ echo "</pre>";
 			}
 		}
 
+		/*********************************************************************************
+		MULTIPOST FOR PAGES
+		*********************************************************************************/
+		function multiPostPage( $postID ){
+			global $switched, $blog_id;
+			// ensure multipost is only triggered from source blog to prevent massive cascade of posts
+			if( $blog_id != $_POST['HMMPMU_source_blog_id'] ){
+				return false;
+			}
+			// get existing child pages, if any
+			$childPages = unserialize( get_post_meta( $postID, 'HMMultipostMU_children', true ) );
+			if( empty( $childPages ) ){
+				$childPages = array(); // key = blog_id, val = post_id
+			}
+			// get page
+			$thisPage = get_page( $postID, ARRAY_A );
+			// create page object with this page's data
+			$dupePage = $thisPage;
+			// get the parent page (we'll need this later)
+			if( $thisPage['post_parent'] > 0 ){
+				// get the parent page and get it's multipost children
+				$parentsChildPages = unserialize( get_post_meta( $thisPage['post_parent'], 'HMMultipostMU_children', true ) );
+				if( empty( $parentsChildPages ) ){
+					$parentsChildPages = array(); // key = blog_id, val = post_id
+				}
+			}
+			unset( $dupePage['post_parent'] );
+			unset( $dupePage['ID'] );
+			unset( $dupePage['guid'] );
+/*
+echo "<pre>";
+print_r( $dupePage );
+echo "</pre>";
+*/
+			// get list of blogs
+			$subBlogs = get_blog_list( 0, 'all' );
+			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
+			foreach( $subBlogs as $subBlog ){
+				// if user selected specific blogs in which to page and this blog isn't among them, skip to next
+				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+					// if a previous page exists on this blog, but isnt now needed, delete it
+					if( in_array( $subBlog['blog_id'], array_keys( $childPages ) ) ){
+						if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
+							wp_delete_post( $childPages[$subBlog['blog_id']] );
+							// jump back to master blog
+							restore_current_blog();
+							unset( $childPages[$subBlog['blog_id']] );
+						}
+					}
+					continue;
+				}
+				if( $blog_id != $subBlog['blog_id'] ){ // skip the current blog
+					$childPageID = 0;	// used to hold new/updated page for each sub-blog
+					// switch each sub-blog
+					if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
+							// if the current page has a valid parent, set the parent accordingly
+							if( isset( $parentsChildPages[$subBlog['blog_id']] ) ){
+								$dupePage['post_parent'] = $parentsChildPages[$subBlog['blog_id']];	// set parent ID
+							}
+							if( isset( $childPages[$subBlog['blog_id']] ) ){
+								// there is already an existing page for this blog
+								$dupePage['ID'] = $childPages[$subBlog['blog_id']];	// set post ID
+								$childPageID = wp_update_post( $dupePage );
+								unset( $dupePage['ID'] );	// remove page ID from duped page object
+							}else{
+								// no existing page for this blog, and was checked, create a new page
+								if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+									$childPageID = wp_insert_post( $dupePage );
+								}
+							}
+							if( $childPageID > 0 ){
+								// get the new pages's object
+								$childPage = get_page( $childPageID );
+								// if the update/new post was successful, add it to the array of child posts
+								$childPages[$subBlog['blog_id']] = $childPageID;
+							}
+						// jump back to master blog
+						restore_current_blog();
+					}
+				}
+			}
+			// add list of child posts to master post as metadata
+			if( !empty( $childPages ) ){
+				update_post_meta( $postID, 'HMMultipostMU_children', serialize( $childPages ) );
+			}
+		}
+
+		/*********************************************************************************
+		DELETE MULTIPOST
+		*********************************************************************************/
 		function deleteMultiPost( $postID ){
 			global $switched;
 			// get existing child posts, if any
@@ -223,6 +324,7 @@ if( !function_exists( 'HMMultipostMU_postUI' ) ){
 		}
 		if( function_exists( 'add_meta_box' ) ){
 			add_meta_box('HMMPMU_meta', 'Multipost', 'HMMPMU_showSubBlogBoxes', 'post', 'side', 'low' );
+			add_meta_box('HMMPMU_meta', 'Multipost', 'HMMPMU_showSubBlogBoxes', 'page', 'side', 'low' );
 		}
 	}
 }
@@ -301,8 +403,10 @@ if( isset( $hmMultipostMU ) ){
 	add_action('multipost-mu/multipost-mu.php',  array(&$hmMultipostMU, 'init')); 
 	add_action('admin_menu', 'HMMultipostMU_op'); 
 	add_action('admin_menu', 'HMMultipostMU_postUI');  
+	add_action('publish_page', array(&$hmMultipostMU, 'multiPostPage'), 1);
 	add_action('publish_post', array(&$hmMultipostMU, 'multiPost'), 1);
 	add_action('delete_post', array(&$hmMultipostMU, 'deleteMultiPost'), 1);
+	add_action('delete_page', array(&$hmMultipostMU, 'deleteMultiPost'), 1);
 	// Filters
 	
 }

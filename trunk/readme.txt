@@ -2,17 +2,17 @@
 Contributors: hungrymedia
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
-Requires at least: 2.8.2
-Tested up to: 2.9.1
+Requires at least: 2.9.2
+Tested up to: 2.9.2
 Stable tag: trunk
 
-Multipost MU is a Wordpress MU plugin that allows you publish a post made to a single blog across multiple blogs.
+Multipost MU is a Wordpress MU plugin that allows you to duplicate posts and pages to multiple sub-blogs at once.
 
 == Description ==
 
 NOTE: This plugin is for Wordpress MU.
 
-Multipost MU is a Wordpress MU plugin that allows you publish a post made to a single blog across multiple blogs. An option panel is added to the sidebar of the Add/Edit post page that alows you to select other blogs to which the current post is published. If the "master post" is edited or deleted, all multiposted copies will also be edited or deleted. 
+Multipost MU is a Wordpress MU plugin that allows you publish a post or page made to a single blog across multiple blogs. An option panel is added to the sidebar of the Add/Edit post and Add/Edit page screens that allow you to select other blogs to which the current post/page is published. If the "master post/page" is edited or deleted, all multiposted copies will also be edited or deleted. 
 
 == Installation ==
 
@@ -22,17 +22,17 @@ Multipost MU is a Wordpress MU plugin that allows you publish a post made to a s
 
 == Frequently Asked Questions ==
 
-= Can I choose on which sub-blogs my post will display? =
+= Can I choose on which sub-blogs my post/page will display? =
 
-Yes. Once the plugin is enabled, you will see a Multipost area on the right side of the "Add New Post" and "Edit Post" screens. This will allow you to select which blogs receive a copy of the post.
+Yes. Once the plugin is enabled, you will see a Multipost area on the right side of the "Add New Post", "Edit Post", "Add New Page" and "Edit Page" screens. This will allow you to select which blogs receive a copy of the post or page.
 
-= Can I modify or delete a post from all sub-blogs simultaneously? =
+= Can I modify or delete a post or page from all sub-blogs simultaneously? =
 
-Yes. Any posts made to the main blog can be edited or deleted and those changes will be reflected on each sub-blog.
+Yes. Any posts or pages made to the main blog can be edited or deleted and those changes will be reflected on each sub-blog.
 
-= What is this HMMultipostMU_children custom field I see on my main post? =
+= What is this HMMultipostMU_children custom field I see on my main post or page? =
 
-The HMMultipostMU_children custom field stores the data for each sub-blog post made from the main blog. This is what maintains the relationship between each main post and sub-blog posts. If you remove or alter this custom field, you may be unable to automatically edit/delete related sub-blog posts any longer.
+The HMMultipostMU_children custom field stores the data for each sub-blog post made from the main blog. This is what maintains the relationship between each main post/page and sub-blog posts/pages. If you remove or alter this custom field, you may be unable to automatically edit/delete related sub-blog posts or pages any longer.
 
 == Screenshots ==
 
@@ -41,6 +41,10 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which additional blogs your master post is published.
 
 == Changelog ==
+
+= 1.8 =
+* Added excerpt and custom field support to posts.
+* Added page support. Pages can now be duplicated across multiple blogs.
 
 = 1.7.1 =
 * BUG FIX: Corrected bug where edits to auto-generated sub-blog posts were creating NEW posts in other blogs. Now, edits to automatically-generated sub-blog posts will only affect the edited post. Note that editing the master post will continue to overwrite sub-blog post edits. This behavior is by design.
