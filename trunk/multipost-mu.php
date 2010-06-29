@@ -6,19 +6,23 @@ Version: v1.8
 Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to duplicate posts and pages to multiple sub-blogs at once.
 
+Update: 2010-06-29 - ddamstra (mirmillo) - updated to use WP 3.0 functions
+
 */
 
 if( !class_exists( 'HMMultipostMU' ) ){
 
-	class HMMultipostMU{
+	class HMMultipostMU {
 	
 		var $defaultToAllOptions = array( 'Yes', 'No' );
 		var $enabled;
 		var $adminOptionsName = "HMMultipostMUOptions";
 	
 		function HMMultipostMU(){
-			$this->userhash = $_GET['uh'];
-//print_r( $_COOKIE );
+			if (isset($_GET['uh'])) {
+				$this->userhash = $_GET['uh'];
+				//print_r( $_COOKIE );
+			}
 		}
 		
 		function getAdminOptions() {
@@ -45,40 +49,46 @@ if( !class_exists( 'HMMultipostMU' ) ){
 				}
 				update_option( $this->adminOptionsName, $pluginOptions );
 				?>
-				<div class="updated"><p><strong><?php _e("Settings Updated.", "HMMultipostMU");?></strong></p></div>
-        <?php
+
+<div class="updated">
+  <p><strong>
+    <?php _e("Settings Updated.", "HMMultipostMU");?>
+    </strong></p>
+</div>
+<?php
 			}
 			?>
-			<div class="wrap">
-			<form method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>" >
-				<h2>Multipost MU</h2>
-        <p>This plugin provides the ability to duplicate posts and pages to any other blogs in the same Wordpress MU installation to which the posting user has access. The posts and pages made to each sub-blog will be completely independent posts/pages and are, therefore, fully editable on each sub-blog without affecting the matching posts/pages elsewhere. If you delete or edit the top-level post or page, however, the corresponding post or page on each sb-blog will be modified or deleted.</p>
-				<label for="enable">Post to all blogs by default? </label>
-        <?php
+<div class="wrap">
+  <form method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>" >
+    <h2>Multipost MU</h2>
+    <p>This plugin provides the ability to duplicate posts and pages to any other blogs in the same Wordpress MU installation to which the posting user has access. The posts and pages made to each sub-blog will be completely independent posts/pages and are, therefore, fully editable on each sub-blog without affecting the matching posts/pages elsewhere. If you delete or edit the top-level post or page, however, the corresponding post or page on each sb-blog will be modified or deleted.</p>
+    <label for="enable">Post to all blogs by default? </label>
+    <?php
 				foreach( $this->defaultToAllOptions as $defaultToAllOption ){
 					$selectedHTML = '';
 					if( $pluginOptions['default_to_all'] == $defaultToAllOption ){
 						$selectedHTML = 'checked="true"';
 					}
 					?>
-        <input <?php echo $selectedHTML; ?> type="radio" id="default_to_all" name="default_to_all" value="<?php echo $defaultToAllOption; ?>" /> <?php echo $defaultToAllOption; ?>
-          <?php
+    <input <?php echo $selectedHTML; ?> type="radio" id="default_to_all" name="default_to_all" value="<?php echo $defaultToAllOption; ?>" />
+    <?php echo $defaultToAllOption; ?>
+    <?php
 				}
 				?>
-				<div class="submit">
-					<input type="submit" name="update_HMMultipostMU" value="<?php _e('Update Settings', 'HMMultipostMU') ?>" />
-				</div>
-			</form>
-			</div>
-			
-			<?php
+    <div class="submit">
+      <input type="submit" name="update_HMMultipostMU" value="<?php _e('Update Settings', 'HMMultipostMU') ?>" />
+    </div>
+  </form>
+</div>
+<?php
 		}
 
 		/*********************************************************************************
 		MULTIPOST FOR POSTS
 		*********************************************************************************/
 		function multiPost( $postID ){
-			global $switched, $blog_id;
+			global $switched, $blog_id, $current_user;
+			get_currentuserinfo();
 			// ensure multipost is only triggered from source blog to prevent massive cascade of posts
 			if( $blog_id != $_POST['HMMPMU_source_blog_id'] ){
 				return false;
@@ -117,34 +127,35 @@ if( !class_exists( 'HMMultipostMU' ) ){
 				'tags_input' => $thisPostTags_string
 			);
 			// get list of blogs
-			$subBlogs = get_blog_list( 0, 'all' );
+			//$subBlogs = get_blog_list( 0, 'all' );
+			$subBlogs = get_blogs_of_user( $current_user->ID );
 			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
 			foreach( $subBlogs as $subBlog ){
 				// if user selected specific blogs in which to post and this blog isn't among them, skip to next
-				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog->userblog_id, $_POST['HMMPMU_selectedSubBlogs'] ) ){
 					// if a previous post exists on this blog, but isnt now needed, delete it
-					if( in_array( $subBlog['blog_id'], array_keys( $childPosts ) ) ){
-						if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
-							wp_delete_post( $childPosts[$subBlog['blog_id']] );
+					if( in_array( $subBlog->userblog_id, array_keys( $childPosts ) ) ){
+						if( switch_to_blog( $subBlog->userblog_id ) === true ){ 
+							wp_delete_post( $childPosts[$subBlog->userblog_id] );
 							// jump back to master blog
 							restore_current_blog();
-							unset( $childPosts[$subBlog['blog_id']] );
+							unset( $childPosts[$subBlog->userblog_id] );
 						}
 					}
 					continue;
 				}
-				if( $blog_id != $subBlog['blog_id'] ){ // skip the current blog
+				if( $blog_id != $subBlog->userblog_id ){ // skip the current blog
 					$childPostID = 0;	// used to hold new/updated post for each sub-blog
 					// switch each sub-blog
-					if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
-							if( isset( $childPosts[$subBlog['blog_id']] ) ){
+					if( switch_to_blog( $subBlog->userblog_id ) === true ){ 
+							if( isset( $childPosts[$subBlog->userblog_id] ) ){
 								// there is already an existing post for this blog
-								$dupePost['ID'] = $childPosts[$subBlog['blog_id']];	// set post ID
+								$dupePost['ID'] = $childPosts[$subBlog->userblog_id];	// set post ID
 								$childPostID = wp_update_post( $dupePost );
 								unset( $dupePost['ID'] );	// remove post ID from duped post object
 							}else{
 								// no existing post for this blog, and was checked, create a new post
-								if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+								if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && in_array( $subBlog->userblog_id, $_POST['HMMPMU_selectedSubBlogs'] ) ){
 									$childPostID = wp_insert_post( $dupePost );
 								}
 							}
@@ -175,7 +186,7 @@ if( !class_exists( 'HMMultipostMU' ) ){
 									}
 								}
 								// if the update/new post was successful, add it to the array of child posts
-								$childPosts[$subBlog['blog_id']] = $childPostID;
+								$childPosts[$subBlog->userblog_id] = $childPostID;
 							}
 						// jump back to master blog
 						restore_current_blog();
@@ -192,7 +203,8 @@ if( !class_exists( 'HMMultipostMU' ) ){
 		MULTIPOST FOR PAGES
 		*********************************************************************************/
 		function multiPostPage( $postID ){
-			global $switched, $blog_id;
+			global $switched, $blog_id, $current_user;
+			get_currentuserinfo();
 			// ensure multipost is only triggered from source blog to prevent massive cascade of posts
 			if( $blog_id != $_POST['HMMPMU_source_blog_id'] ){
 				return false;
@@ -223,38 +235,39 @@ print_r( $dupePage );
 echo "</pre>";
 */
 			// get list of blogs
-			$subBlogs = get_blog_list( 0, 'all' );
+			//$subBlogs = get_blog_list( 0, 'all' );
+			$subBlogs = get_blogs_of_user( $current_user->ID );
 			// get the subBlogs in chronological order as get_blog_list() pulls in reverse cron order
 			foreach( $subBlogs as $subBlog ){
 				// if user selected specific blogs in which to page and this blog isn't among them, skip to next
-				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+				if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && !in_array( $subBlog->userblog_id, $_POST['HMMPMU_selectedSubBlogs'] ) ){
 					// if a previous page exists on this blog, but isnt now needed, delete it
-					if( in_array( $subBlog['blog_id'], array_keys( $childPages ) ) ){
-						if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
-							wp_delete_post( $childPages[$subBlog['blog_id']] );
+					if( in_array( $subBlog->userblog_id, array_keys( $childPages ) ) ){
+						if( switch_to_blog( $subBlog->userblog_id ) === true ){ 
+							wp_delete_post( $childPages[$subBlog->userblog_id] );
 							// jump back to master blog
 							restore_current_blog();
-							unset( $childPages[$subBlog['blog_id']] );
+							unset( $childPages[$subBlog->userblog_id] );
 						}
 					}
 					continue;
 				}
-				if( $blog_id != $subBlog['blog_id'] ){ // skip the current blog
+				if( $blog_id != $subBlog->userblog_id ){ // skip the current blog
 					$childPageID = 0;	// used to hold new/updated page for each sub-blog
 					// switch each sub-blog
-					if( switch_to_blog( $subBlog['blog_id'] ) === true ){ 
+					if( switch_to_blog( $subBlog->userblog_id ) === true ){ 
 							// if the current page has a valid parent, set the parent accordingly
-							if( isset( $parentsChildPages[$subBlog['blog_id']] ) ){
-								$dupePage['post_parent'] = $parentsChildPages[$subBlog['blog_id']];	// set parent ID
+							if( isset( $parentsChildPages[$subBlog->userblog_id] ) ){
+								$dupePage['post_parent'] = $parentsChildPages[$subBlog->userblog_id];	// set parent ID
 							}
-							if( isset( $childPages[$subBlog['blog_id']] ) ){
+							if( isset( $childPages[$subBlog->userblog_id] ) ){
 								// there is already an existing page for this blog
-								$dupePage['ID'] = $childPages[$subBlog['blog_id']];	// set post ID
+								$dupePage['ID'] = $childPages[$subBlog->userblog_id];	// set post ID
 								$childPageID = wp_update_post( $dupePage );
 								unset( $dupePage['ID'] );	// remove page ID from duped page object
 							}else{
 								// no existing page for this blog, and was checked, create a new page
-								if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && in_array( $subBlog['blog_id'], $_POST['HMMPMU_selectedSubBlogs'] ) ){
+								if( !empty( $_POST['HMMPMU_selectedSubBlogs'] ) && in_array( $subBlog->userblog_id, $_POST['HMMPMU_selectedSubBlogs'] ) ){
 									$childPageID = wp_insert_post( $dupePage );
 								}
 							}
@@ -262,7 +275,7 @@ echo "</pre>";
 								// get the new pages's object
 								$childPage = get_page( $childPageID );
 								// if the update/new post was successful, add it to the array of child posts
-								$childPages[$subBlog['blog_id']] = $childPageID;
+								$childPages[$subBlog->userblog_id] = $childPageID;
 							}
 						// jump back to master blog
 						restore_current_blog();
@@ -294,9 +307,7 @@ echo "</pre>";
 				}
 			}
 		}
-		
 	}	
-	
 } // End HMMultipostMU class
 
 if ( class_exists( 'HMMultipostMU' ) ) {
@@ -310,7 +321,7 @@ if( !function_exists( 'HMMultipostMU_op' ) ){
 			return;
 		}
 		if( function_exists( 'add_options_page' ) ){
-			add_options_page( 'Multipost MU', 'Multipost MU', 9, basename( __FILE__ ), array( &$hmMultipostMU, 'displayAdminPage' ) );
+			add_options_page( 'Multipost MU', 'Multipost MU', 'publish_posts', basename( __FILE__ ), array( &$hmMultipostMU, 'displayAdminPage' ) );
 		}
 	}
 }
@@ -330,11 +341,11 @@ if( !function_exists( 'HMMultipostMU_postUI' ) ){
 }
 
 function HMMPMU_showSubBlogBoxes( $post ){
-	global $user_ID, $blog_id, $hmMultipostMU;
+	global $current_user, $blog_id, $hmMultipostMU;
 	$pluginOptions = $hmMultipostMU->getAdminOptions();
 	?>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-  <script type="text/javascript">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+<script type="text/javascript">
   $(document).ready( function(){
 		$('#HMMPMU_checkall').click( function(e){
 			e.preventDefault();
@@ -354,19 +365,21 @@ function HMMPMU_showSubBlogBoxes( $post ){
 	}
 
   </script>
-  <input type="hidden" name="HMMPMU_source_blog_id" value="<?php echo $blog_id; ?>" />
-	<p style="float: right; font-size: 0.8em;">Check <a href="#" id="HMMPMU_checkall">all</a> / <a href="#"id="HMMPMU_checknone">none</a></p>
-  <p>Post to:</p>
-	<?php
+<input type="hidden" name="HMMPMU_source_blog_id" value="<?php echo $blog_id; ?>" />
+<p style="float: right; font-size: 0.8em;">Check <a href="#" id="HMMPMU_checkall">all</a> / <a href="#"id="HMMPMU_checknone">none</a></p>
+<p>Post to:</p>
+<?php
 	get_currentuserinfo();
 	// get existing child posts, if any
 	if( $post->ID > 0 ){
-		$childBlogs = unserialize( get_post_meta( $post->ID, 'HMMultipostMU_children', true ) );
+		 $childBlogs = unserialize( get_post_meta( $post->ID, 'HMMultipostMU_children', true ) );
 		if( !empty( $childBlogs ) ){ 
 			$childPostBlogIDs = array_keys( $childBlogs );
+		} else {
+			$childPostBlogIDs = array();
 		}
 	}
-	$oSubBlogs = get_blogs_of_user( $user_ID );
+	$oSubBlogs = get_blogs_of_user( $current_user->ID );
 	$subBlogs = array();
 	foreach( $oSubBlogs as $oSubBlog ){
 		$subBlogs[$oSubBlog->userblog_id] = $oSubBlog->blogname;
@@ -375,25 +388,28 @@ function HMMPMU_showSubBlogBoxes( $post ){
 	foreach( $subBlogs as $subBlogID => $subBlogName ){
 			$checkedHTML = '';
 			$disabledHTML = '';
-			if( ( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) || ( is_array( $childPostBlogIDs ) && in_array( $subBlogID, $childPostBlogIDs ) ) ){
+			if( ( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) || ( is_array( $subBlogs ) && in_array( $subBlogID, $childPostBlogIDs ) ) ){
+			//if( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) {
 				$checkedHTML = 'checked="true"';
 			}
 			if( (int)$subBlogID == (int)$blog_id ){
 				$checkedHTML = 'checked="true"';
 				$disabledHTML = 'disabled = "true"';
 			}
+		
 			?>
-			<input type="checkbox" 
+<input type="checkbox" 
 				class="HMMPMU_selectedSubBlogs_checkbox" 
 				name="HMMPMU_selectedSubBlogs[]" 
 				<?php echo $checkedHTML; ?>
 				<?php echo $disabledHTML; ?>
 				value="<?php echo $subBlogID; ?>" />
-			<?php 
+<?php 
 //			$currentBlog = get_blog_details( $subBlog->userblog_id );
-			echo $subBlogName;?><br />
-			<?php
-	}
+			echo $subBlogName;?>
+<br />
+<?php
+	} /* /foreach */
 }
 
 
@@ -403,13 +419,12 @@ if( isset( $hmMultipostMU ) ){
 	add_action('multipost-mu/multipost-mu.php',  array(&$hmMultipostMU, 'init')); 
 	add_action('admin_menu', 'HMMultipostMU_op'); 
 	add_action('admin_menu', 'HMMultipostMU_postUI');  
-	add_action('publish_page', array(&$hmMultipostMU, 'multiPostPage'), 1);
+  add_action('publish_page', array(&$hmMultipostMU, 'multiPostPage'), 1);
 	add_action('publish_post', array(&$hmMultipostMU, 'multiPost'), 1);
 	add_action('delete_post', array(&$hmMultipostMU, 'deleteMultiPost'), 1);
-	add_action('delete_page', array(&$hmMultipostMU, 'deleteMultiPost'), 1);
+	add_action('delete_page', array(&$hmMultipostMU, 'deleteMultiPost'), 1); 
 	// Filters
 	
+	
 }
-
-
 ?>
