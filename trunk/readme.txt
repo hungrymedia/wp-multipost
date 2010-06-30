@@ -43,6 +43,9 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 
 == Changelog ==
 
+= 1.9 =
+* Updated for WordPress 3.0
+
 = 1.8 =
 * Added excerpt and custom field support to posts.
 * Added page support. Pages can now be duplicated across multiple blogs.
