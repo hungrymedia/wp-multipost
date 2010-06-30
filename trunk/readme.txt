@@ -3,7 +3,7 @@ Contributors: hungrymedia
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.9.2
-Tested up to: 2.9.2
+Tested up to: 3.0
 Stable tag: trunk
 
 Multipost MU is a Wordpress MU plugin that allows you to duplicate posts and pages to multiple sub-blogs at once.
@@ -11,7 +11,7 @@ Multipost MU is a Wordpress MU plugin that allows you to duplicate posts and pag
 == Description ==
 
 ********
-NOTE: This plugin was for Wordpress MU. I have had several reports of it not working for Wordpress 3.0, but have no time to update the plugin. If you have the time and skills to update it, I'm happy to grant you admin access to update the plugin.
+NOTE: This plugin has been updated for WordPress 3.0
 ********
 Multipost MU is a Wordpress MU plugin that allows you publish a post or page made to a single blog across multiple blogs. An option panel is added to the sidebar of the Add/Edit post and Add/Edit page screens that allow you to select other blogs to which the current post/page is published. If the "master post/page" is edited or deleted, all multiposted copies will also be edited or deleted. 
 
