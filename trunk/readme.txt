@@ -1,5 +1,5 @@
 === Multipost MU ===
-Contributors: hungrymedia
+Contributors: hungrymedia, mirmillo
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.9.2
@@ -44,7 +44,7 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 == Changelog ==
 
 = 1.9 =
-* Updated for WordPress 3.0
+* Updated for WordPress 3.0 (mirmillo)
 
 = 1.8 =
 * Added excerpt and custom field support to posts.
