@@ -42,6 +42,11 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which additional blogs your master post is published.
 
 == Changelog ==
+
+= 2.1 =
+* Fixed conflicting jQuery libraries - props Awolverine   (mirmillo)
+  [http://wordpress.org/support/topic/plugin-multipost-mu-tagging-is-disabled-wmultipost-activated?replies=6#post-1642268]
+
 = 2.0 =
 * Added support for sticky posts (tmuka)
 * Added support for page templates. Note that the feature assumes the selected template file exists on all sites. (tmuka)

@@ -2,13 +2,9 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v2.0
+Version: v2.1
 Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to duplicate posts and pages to multiple sub-blogs at once.
-
-Update: 2010-07-26 - (tmuka) - updated for sticky posts and page templates
-Update: 2010-06-29 - ddamstra (mirmillo) - updated to use WP 3.0 functions
-
 */
 
 if( !class_exists( 'HMMultipostMU' ) ){
@@ -367,25 +363,25 @@ if( !function_exists( 'HMMultipostMU_postUI' ) ) {
 
 function HMMPMU_showSubBlogBoxes( $post ) {
 	global $current_user, $blog_id, $hmMultipostMU;
+	wp_enqueue_script('jquery');
 	$pluginOptions = $hmMultipostMU->getAdminOptions();
 	?>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 <script type="text/javascript">
-  $(document).ready( function(){
-		$('#HMMPMU_checkall').click( function(e){
+  jQuery(document).ready( function($){
+		jQuery('#HMMPMU_checkall').click( function(e){
 			e.preventDefault();
 			HMMPMU_check( 'check' );
 		});
-		$('#HMMPMU_checknone').click( function(e){
+		jQuery('#HMMPMU_checknone').click( function(e){
 			e.preventDefault();
 			HMMPMU_check( 'uncheck' );
 		});
 	});
 	function HMMPMU_check( action ){
 		if( action == 'check' ){
-			$('.HMMPMU_selectedSubBlogs_checkbox').attr('checked', 'true');
+			jQuery('.HMMPMU_selectedSubBlogs_checkbox').attr('checked', 'true');
 		}else{
-			$('.HMMPMU_selectedSubBlogs_checkbox[disabled!=true]').removeAttr('checked');
+			jQuery('.HMMPMU_selectedSubBlogs_checkbox[disabled!=true]').removeAttr('checked');
 		}
 	}
 
@@ -443,7 +439,7 @@ if( isset( $hmMultipostMU ) ) {
 	add_action('multipost-mu/multipost-mu.php',  array(&$hmMultipostMU, 'init')); 
 	add_action('admin_menu', 'HMMultipostMU_op'); 
 	add_action('admin_menu', 'HMMultipostMU_postUI');  
-  add_action('publish_page', array(&$hmMultipostMU, 'multiPostPage'), 1);
+    add_action('publish_page', array(&$hmMultipostMU, 'multiPostPage'), 1);
 	add_action('publish_post', array(&$hmMultipostMU, 'multiPost'), 1);
 	add_action('delete_post', array(&$hmMultipostMU, 'deleteMultiPost'), 1);
 	add_action('delete_page', array(&$hmMultipostMU, 'deleteMultiPost'), 1); 
