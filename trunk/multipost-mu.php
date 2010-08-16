@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v2.1
+Version: v2.2
 Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to duplicate posts and pages to multiple sub-blogs at once.
 */
@@ -392,6 +392,7 @@ function HMMPMU_showSubBlogBoxes( $post ) {
 <?php
 	get_currentuserinfo();
 	// get existing child posts, if any
+	// in wp 3.0.1 it looks like ID is never 0 so this runs every time which is probably fine, just a bit slower for new posts
 	if( $post->ID > 0 ) {
 		 $childBlogs = unserialize( get_post_meta( $post->ID, 'HMMultipostMU_children', true ) );
 		if( !empty( $childBlogs ) ) { 
@@ -400,6 +401,9 @@ function HMMPMU_showSubBlogBoxes( $post ) {
 			$childPostBlogIDs = array();
 		}
 	}
+	
+	$is_new_post = empty($childPostBlogIDs);
+	
 	$oSubBlogs = get_blogs_of_user( $current_user->ID );
 	$subBlogs = array();
 	foreach( $oSubBlogs as $oSubBlog ) {
@@ -409,7 +413,9 @@ function HMMPMU_showSubBlogBoxes( $post ) {
 	foreach( $subBlogs as $subBlogID => $subBlogName ) {
 			$checkedHTML = '';
 			$disabledHTML = '';
-			if( ( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) || ( is_array( $subBlogs ) && in_array( $subBlogID, $childPostBlogIDs ) ) ) {
+			//updated for wp 3.0.1 since it looks like we dont get $post->ID == 0 now. on new post creation it already has an id.
+			if(( $is_new_post && $pluginOptions['default_to_all'] == 'Yes' ) || ( is_array( $subBlogs ) && in_array( $subBlogID, $childPostBlogIDs ))){
+			//if( ( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) || ( is_array( $subBlogs ) && in_array( $subBlogID, $childPostBlogIDs ) ) ) {
 			//if( $post->ID == 0 && $pluginOptions['default_to_all'] == 'Yes' ) {
 				$checkedHTML = 'checked="true"';
 			}

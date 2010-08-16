@@ -42,6 +42,8 @@ The HMMultipostMU_children custom field stores the data for each sub-blog post m
 2. Shows the additional panel displayed on "Add New Post" and "Edit Post" screens. This allows you to choose to which additional blogs your master post is published.
 
 == Changelog ==
+= 2.2 =
+* BUG FIX: Now "Post to all blogs by default?" option works in WordPress 3.0.1
 
 = 2.1 =
 * Fixed conflicting jQuery libraries - props Awolverine   (mirmillo)
