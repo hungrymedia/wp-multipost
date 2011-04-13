@@ -1,5 +1,5 @@
 === Multipost MU ===
-Contributors: hungrymedia, mirmillo, tmuka
+Contributors: HungryMedia, mirmillo, tmuka
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.9.2
