@@ -3,7 +3,7 @@ Contributors: HungryMedia, mirmillo, tmuka
 Donate link: http://hungry-media.com/index.php#donate
 Tags: wpmu, broadcast, post, multicast
 Requires at least: 2.9.2
-Tested up to: 3.0
+Tested up to: 3.1.1
 Stable tag: trunk
 
 Multipost MU is a Wordpress MU plugin that allows you to duplicate posts and pages to multiple sub-blogs at once.
