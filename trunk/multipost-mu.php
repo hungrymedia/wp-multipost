@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multipost MU
 Plugin URI:	http://wordpress.org/extend/plugins/multipost-mu/
-Version: v2.2
+Version: v2.3
 Author: Warren Harrison
 Description: Allow a Wordpress MU site administrator to duplicate posts and pages to multiple sub-blogs at once.
 */
@@ -121,6 +121,10 @@ if( !class_exists( 'HMMultipostMU' ) ){
 				'post_status' => $thisPost->post_status, 
 				'post_author' => $thisPost->post_author, 
 				'post_excerpt' => $thisPost->post_excerpt, 
+				'post_date' => $thisPost->post_date, 
+				'post_date_gmt' => $thisPost->post_date_gmt, 
+				'post_modified' => $thisPost->post_modified, 
+				'post_modified_gmt' => $thisPost->post_modified_gmt, 
 				'tags_input' => $thisPostTags_string
 			);
 			//check if post is sticky
