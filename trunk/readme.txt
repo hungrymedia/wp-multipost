@@ -35,6 +35,10 @@ Yes. Any posts or pages made to the main blog can be edited or deleted and those
 
 The HMMultipostMU_children custom field stores the data for each sub-blog post made from the main blog. This is what maintains the relationship between each main post/page and sub-blog posts/pages. If you remove or alter this custom field, you may be unable to automatically edit/delete related sub-blog posts or pages any longer.
 
+= I am not seeing all of my sub-blogs in the list on the post authoring page. Why not? =
+
+The list of blogs contains only those to which the current user has permission to post. So it may be that you need to add the current user as an editor/administrator to each sub-blog.
+
 == Screenshots ==
 
 1. Shows the settings page for Multipost MU. Simply a way to choose whether or not all blogs are pre-selected to receive cross posts. 
